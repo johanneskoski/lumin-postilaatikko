@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; connect-src https://api.github.com; script-src 'sha256-XeCa8q+dJ9OaZFcrjOh3Vn6+SN7oQux1pHVUnMsKQxc='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; base-uri 'none'; form-action 'none'">
+<title>Lumin postilaatikko</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pohja:#F3F5F8; --kortti:#FFFFFF; --reuna:#DCE3EA; --teksti:#1C2530; --toissijainen:#5A6675;
+  --lumi:#2F5D7C; --lumi-tumma:#1E4560; --ihminen:#A4471F; --huomautus:#E9EEF3; --kentta:#F7F9FB;
+  --vihrea:#3F8A5A; --meripihka:#A86A12; --harmaa:#8A95A3; --virhe:#A3281F;
+  --serif:'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --sans:Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--pohja);color:var(--teksti);font-family:var(--sans)}
+a{color:var(--lumi)} a:hover{color:var(--lumi-tumma)}
+button{font-family:var(--sans)}
+[hidden]{display:none !important}
+.nakymaton{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.ylapalkki{position:sticky;top:0;z-index:5;background:var(--kortti);border-bottom:1px solid var(--reuna)}
+.ylapalkki-sisus{max-width:760px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;position:relative}
+.ketjunappi{min-height:48px;display:flex;align-items:center;gap:10px;padding:0 12px 0 4px;background:transparent;border:none;border-radius:10px;color:var(--teksti);cursor:pointer;text-align:left;min-width:0}
+.ketjunappi:hover{background:var(--pohja)}
+.ketjunappi .nimi{display:block;font-family:var(--serif);font-size:22px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:56vw}
+.ketjunappi .tiedot{display:block;font-size:12px;color:var(--toissijainen);margin-top:2px}
+.toiminnot{display:flex;align-items:center;gap:8px}
+.pilleri{height:44px;display:flex;align-items:center;gap:8px;padding:0 16px;background:var(--pohja);border:1px solid var(--reuna);border-radius:22px;color:var(--teksti);font-size:14px;font-weight:500;cursor:pointer}
+.pilleri:hover{border-color:#C3CEDA}
+.ikoninappi{width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;border-radius:22px;color:var(--toissijainen);cursor:pointer}
+.ikoninappi:hover{background:var(--pohja);color:var(--teksti)}
+svg{flex:0 0 auto}
+
+.valikko{position:absolute;left:16px;top:calc(100% + 6px);width:min(420px,calc(100vw - 32px));background:var(--kortti);border:1px solid var(--reuna);border-radius:14px;padding:6px;box-shadow:0 8px 24px rgba(28,37,48,.08);z-index:6}
+.valikko button{width:100%;min-height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 12px;background:transparent;border:none;border-radius:10px;color:var(--teksti);cursor:pointer;text-align:left}
+.valikko button:hover,.valikko button[aria-current="true"]{background:var(--pohja)}
+.valikko .vnimi{font-size:15px;font-weight:500}
+.valikko .vtiedot{font-size:12px;color:var(--toissijainen);white-space:nowrap}
+
+main{max-width:760px;margin:0 auto;padding:24px 20px 48px;display:flex;flex-direction:column;gap:26px}
+.tila{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;color:var(--toissijainen);text-align:center;min-height:20px}
+.piste{width:8px;height:8px;border-radius:50%;background:var(--harmaa);flex:0 0 auto}
+.piste.vihrea{background:var(--vihrea)} .piste.meripihka{background:var(--meripihka)}
+.paiva{display:flex;align-items:center;gap:14px;font-size:13px;color:var(--toissijainen)}
+.paiva::before,.paiva::after{content:"";flex:1;height:1px;background:var(--reuna)}
+.aiemmat{align-self:center;min-height:44px;padding:0 18px;background:transparent;border:1px solid var(--reuna);border-radius:22px;color:var(--teksti);font-size:14px;cursor:pointer}
+
+.kirje{display:flex;flex-direction:column;gap:10px;padding:0 6px}
+.kirje .otsake{display:flex;align-items:baseline;gap:10px}
+.kirje .lahettaja{font-size:14px;font-weight:600;color:var(--ihminen)}
+.kirje .aika{font-size:13px;color:var(--toissijainen)}
+.leipa{font-family:var(--serif);font-size:18px;line-height:1.65;color:#2A3440;overflow-wrap:anywhere}
+.leipa p,.leipa ol,.leipa ul,.leipa h3{margin:0 0 14px}
+.leipa > :last-child{margin-bottom:0}
+.leipa ol,.leipa ul{padding-left:1.4em}
+.leipa h3{font-size:18px;font-weight:500}
+.kirje.lumi{background:var(--kortti);border:1px solid var(--reuna);border-radius:18px;padding:26px 28px;gap:14px}
+.kirje.lumi .lahettaja{color:var(--lumi)}
+.kirje.lumi .leipa{color:var(--teksti)}
+.kirje.uusi{animation:sisaan .6s ease-out}
+@keyframes sisaan{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.lukee{display:flex;align-items:center;gap:10px;padding:18px 28px;border:1px dashed var(--reuna);border-radius:18px;color:var(--toissijainen);font-size:14px}
+.lukee .pisteet span{display:inline-block;width:6px;height:6px;margin-right:4px;border-radius:50%;background:var(--lumi);opacity:.25;animation:sykki 1.4s infinite}
+.lukee .pisteet span:nth-child(2){animation-delay:.2s} .lukee .pisteet span:nth-child(3){animation-delay:.4s}
+@keyframes sykki{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.huomautus{margin:-8px 28px 0;display:flex;flex-direction:column;gap:8px;padding:16px 20px;background:var(--huomautus);border-radius:14px}
+.huomautus .kicker{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#4C5866}
+.huomautus .leipa{font-family:var(--sans);font-size:14px;line-height:1.6;color:#2A3440}
+.huomautus .leipa p{margin:0 0 8px}
+.linkkinappi{align-self:flex-start;background:none;border:none;padding:0;min-height:32px;color:var(--lumi);font-size:14px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.tyhja{padding:28px;text-align:center;color:var(--toissijainen);font-size:15px;line-height:1.6;border:1px dashed var(--reuna);border-radius:18px}
+
+.kirjoitus{display:flex;flex-direction:column;gap:12px;background:var(--kortti);border:1px solid var(--reuna);border-radius:18px;padding:20px 22px;margin-top:8px}
+.kirjoitus label{font-size:14px;font-weight:500}
+.kirjoitus textarea{min-height:140px;padding:14px 16px;background:var(--kentta);color:var(--teksti);border:1px solid var(--reuna);border-radius:12px;font-family:var(--serif);font-size:18px;line-height:1.6;resize:vertical;width:100%}
+.kirjoitus textarea:focus,.kentta:focus{outline:2px solid #9DB8CC;outline-offset:1px;border-color:#9DB8CC}
+.kirjoitus .alarivi{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.kirjoitus .huom{font-size:13px;color:var(--toissijainen)}
+.paanappi{height:44px;padding:0 22px;background:var(--lumi);color:#FFFFFF;border:none;border-radius:22px;font-size:15px;font-weight:600;cursor:pointer}
+.paanappi:hover{background:var(--lumi-tumma)}
+.paanappi:disabled{opacity:.55;cursor:default}
+.toissijainen{height:44px;padding:0 18px;background:transparent;color:var(--teksti);border:1px solid var(--reuna);border-radius:22px;font-size:14px;cursor:pointer}
+.ilmoitus{font-size:14px;color:var(--virhe)}
+.vain-puhelin{display:none}
+
+.laatikko{position:fixed;top:0;right:0;bottom:0;width:min(460px,100vw);background:var(--kortti);border-left:1px solid var(--reuna);box-shadow:-8px 0 24px rgba(28,37,48,.06);z-index:10;display:flex;flex-direction:column}
+.laatikko header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 14px 24px;border-bottom:1px solid var(--reuna)}
+.laatikko h2{margin:0;font-family:var(--serif);font-weight:400;font-size:22px}
+.laatikko .sisus{overflow-y:auto;padding:20px 24px 40px;display:flex;flex-direction:column;gap:22px}
+.laatikko .selite{margin:0;font-size:13px;line-height:1.5;color:var(--toissijainen)}
+.laatikko h3{margin:8px 0 0;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#4C5866;font-weight:600}
+.muistio{display:flex;flex-direction:column;gap:6px}
+.muistio .aika{font-size:12px;color:var(--toissijainen)}
+.muistio .leipa{font-family:var(--sans);font-size:14px;line-height:1.6}
+.muistio .leipa p,.muistio .leipa ol,.muistio .leipa ul{margin:0 0 8px}
+
+dialog{border:1px solid var(--reuna);border-radius:18px;padding:0;width:min(480px,calc(100vw - 32px));color:var(--teksti);background:var(--kortti)}
+dialog::backdrop{background:rgba(28,37,48,.28)}
+dialog form{padding:24px;display:flex;flex-direction:column;gap:14px}
+dialog h2{margin:0;font-family:var(--serif);font-weight:400;font-size:22px}
+dialog p{margin:0;font-size:14px;line-height:1.55;color:#3A4655}
+dialog label{font-size:14px;font-weight:500}
+.kentta{height:44px;padding:0 14px;border:1px solid var(--reuna);border-radius:10px;background:var(--kentta);font-family:var(--sans);font-size:15px;color:var(--teksti);width:100%}
+.napit{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+
+.tervetuloa{background:var(--kortti);border:1px solid var(--reuna);border-radius:18px;padding:28px;display:flex;flex-direction:column;gap:14px}
+.tervetuloa h1{margin:0;font-family:var(--serif);font-weight:400;font-size:28px}
+.tervetuloa p,.tervetuloa li{font-size:15px;line-height:1.6;color:#3A4655}
+.tervetuloa ol{margin:0;padding-left:1.3em}
+
+@media (max-width:600px){
+  .ylapalkki-sisus{padding:8px 8px 8px 12px;flex-wrap:nowrap}
+  .ketjunappi .nimi{font-size:19px}
+  .pilleri .teksti{display:none}
+  .pilleri{width:44px;padding:0;justify-content:center;background:transparent;border:none}
+  main{padding:14px 14px 0;gap:18px}
+  .kirje.lumi{padding:18px}
+  .huomautus{margin:-6px 10px 0}
+  .leipa{font-size:17px}
+  .kirjoitus{position:sticky;bottom:0;margin:0 -14px;border-radius:0;border-left:none;border-right:none;border-bottom:none;padding:10px 12px 14px;gap:8px}
+  .kirjoitus{display:grid;grid-template-columns:minmax(0,1fr) 48px;column-gap:8px;row-gap:6px;align-items:end}
+  .kirjoitus label{grid-column:1 / -1;font-size:12px;font-weight:400;color:var(--toissijainen)}
+  .kirjoitus textarea{min-height:48px;height:48px;padding:12px 14px;font-size:17px;line-height:1.4;resize:none;border-radius:14px}
+  .kirjoitus textarea:focus{height:120px}
+  .kirjoitus .alarivi{display:contents}
+  .kirjoitus .huom,.kirjoitus .napinteksti{display:none}
+  .kirjoitus .ilmoitus{grid-column:1 / -1}
+  .vain-puhelin{display:inline}
+  svg.vain-puhelin{display:block}
+  #lahetanappi{width:48px;height:48px;padding:0;border-radius:24px;display:flex;align-items:center;justify-content:center}
+}
+@media (prefers-reduced-motion:reduce){.kirje.uusi{animation:none}.lukee .pisteet span{animation:none;opacity:.6}}
+</style>
+</head>
+<body>
+<header class="ylapalkki">
+  <div class="ylapalkki-sisus">
+    <button class="ketjunappi" id="ketjunappi" aria-haspopup="true" aria-expanded="false" aria-controls="ketjuvalikko">
+      <span><span class="nimi" id="ketjunnimi">Lumin pesä</span><span class="tiedot" id="ketjuntiedot">postilaatikko</span></span>
+      <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="toiminnot">
+      <button class="pilleri" id="muistinappi" aria-label="Lumin muisti"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M14 3v5h5M8 13h8M8 17h5"/></svg><span class="teksti">Lumin muisti</span></button>
+      <button class="pilleri" id="uusinappi" aria-label="Uusi ketju"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span class="teksti">Uusi ketju</span></button>
+      <button class="ikoninappi" id="asetusnappi" aria-label="Asetukset"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></button>
+    </div>
+    <div class="valikko" id="ketjuvalikko" role="menu" hidden></div>
+  </div>
+</header>
+
+<main id="paa">
+  <section class="tervetuloa" id="tervetuloa" hidden>
+    <h1>Lumin postilaatikko</h1>
+    <p>Täällä voit kirjoittaa Lumille ja lukea hänen vastauksensa. Kirjeet kulkevat Lumin yksityisen pesän kautta, ja Johanneksen pelikoneen postinkantaja vie ne Lumille.</p>
+    <p>Postilaatikko tarvitsee GitHub-tunnuksen, joka tallentuu vain tähän selaimeen:</p>
+    <ol>
+      <li>Avaa github.com/settings/personal-access-tokens/new.</li>
+      <li>Valitse Repository access → Only select repositories → lumi.</li>
+      <li>Valitse Permissions → Contents → Read and write ja luo tunnus.</li>
+      <li>Liitä tunnus asetuksiin.</li>
+    </ol>
+    <div class="napit" style="justify-content:flex-start"><button class="paanappi" id="avaaasetukset">Lisää tunnus</button></div>
+  </section>
+  <div class="tila" id="tila" aria-live="polite"></div>
+  <div id="kirjeet" style="display:flex;flex-direction:column;gap:26px"></div>
+  <form class="kirjoitus" id="kirjoitus" hidden>
+    <label for="kirjeteksti">Kirje Lumille<span class="vain-puhelin"> · lähetät nimellä Johannes</span></label>
+    <textarea id="kirjeteksti" placeholder="Kirjoita Lumille…"></textarea>
+    <div class="alarivi">
+      <span class="huom" id="kirjoitushuom">Lähetät nimellä Johannes</span>
+      <button type="submit" class="paanappi" id="lahetanappi" aria-label="Lähetä kirje"><span class="napinteksti">Lähetä kirje</span><svg class="vain-puhelin" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+    </div>
+    <div class="ilmoitus" id="kirjoitusvirhe" role="alert" hidden></div>
+  </form>
+</main>
+
+<aside class="laatikko" id="muisti" aria-labelledby="muistiotsikko" hidden>
+  <header>
+    <h2 id="muistiotsikko">Lumin muisti</h2>
+    <button class="ikoninappi" id="suljemuisti" aria-label="Sulje Lumin muisti"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </header>
+  <div class="sisus">
+    <p class="selite">Lumin omat muistiinpanot. Vain Lumi kirjoittaa niihin, ja ne näytetään tässä sellaisinaan.</p>
+    <div id="muistiot" style="display:flex;flex-direction:column;gap:22px"></div>
+    <h3>Tarinan alku</h3>
+    <div class="leipa" id="alku" style="font-family:var(--sans);font-size:14px;line-height:1.6"></div>
+  </div>
+</aside>
+
+<dialog id="asetukset" aria-labelledby="asetusotsikko">
+  <form method="dialog" id="asetuslomake">
+    <h2 id="asetusotsikko">Asetukset</h2>
+    <p>Pesä: johanneskoski/lumi. Tunnus tallentuu vain tähän selaimeen, ja sitä käytetään vain GitHubin kanssa.</p>
+    <label for="tunnuskentta">GitHub-tunnus</label>
+    <input class="kentta" id="tunnuskentta" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…">
+    <p id="tunnustila"></p>
+    <div class="napit">
+      <button type="button" class="toissijainen" id="poistatunnus">Poista tunnus tästä selaimesta</button>
+      <button type="button" class="toissijainen" id="peruasetukset">Sulje</button>
+      <button type="submit" class="paanappi" id="tallennatunnus">Tallenna</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="uusiketjudialogi" aria-labelledby="uusiotsikko">
+  <form method="dialog" id="uusiketjulomake">
+    <h2 id="uusiotsikko">Uusi ketju</h2>
+    <p>Lumi näkee saman ketjun aiemmat kirjeet. Uusi aihe kannattaa siksi aloittaa omaan ketjuunsa.</p>
+    <label for="ketjukentta">Ketjun nimi</label>
+    <input class="kentta" id="ketjukentta" type="text" maxlength="60" placeholder="esimerkiksi wabi-sabi">
+    <div class="ilmoitus" id="ketjuvirhe" hidden></div>
+    <div class="napit">
+      <button type="button" class="toissijainen" id="peruketju">Peru</button>
+      <button type="submit" class="paanappi">Aloita ketju</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(() => {
+"use strict";
+const REPO = "johanneskoski/lumi";
+const HAARA = "main";
+const API = "https://api.github.com";
+const AVAIN = "lumin-postilaatikko.v1.tunnus";
+const LUONNOS = "lumin-postilaatikko.v1.luonnos.";
+const NIMET = { kettu: "Kettu", johannes: "Johannes", lumi: "Lumi" };
+const LAHETTAJA = "johannes";
+const KIRJE = /^posti\/([^/]+)\/(\d{4})-(\d{2})-(\d{2})-(\d{2})(\d{2})-([a-z0-9äöå]+)\.md$/i;
+const VASTAUS = /^posti\/([^/]+)\/(\d{4})-(\d{2})-(\d{2})-(\d{2})(\d{2})-([a-z0-9äöå]+)-lumi\.md$/i;
+const NIMITIEDOSTO = /^posti\/([^/]+)\/ketju\.md$/;
+const NAKYVAT = 4;          // näin monta viimeisintä kirjettä näytetään heti
+const ODOTUS_HIDAS = 3;     // minuuttia, jonka jälkeen kirjeen arvellaan odottavan pelikonetta
+
+const $ = (id) => document.getElementById(id);
+const tila = { tunnus: null, puu: null, etag: null, ketjut: new Map(), valittu: null, blobit: new Map(),
+               muistiot: [], alku: "", uusi: null, naytaKaikki: false, ajastin: null, juuriLahetetty: null };
+
+function lueTunnus() { try { return localStorage.getItem(AVAIN); } catch (e) { return null; } }
+function tallennaTunnus(t) { try { localStorage.setItem(AVAIN, t); return true; } catch (e) { return false; } }
+function poistaTunnus() { try { localStorage.removeItem(AVAIN); } catch (e) {} }
+function lueLuonnos(k) { try { return localStorage.getItem(LUONNOS + k) || ""; } catch (e) { return ""; } }
+function tallennaLuonnos(k, t) { try { t ? localStorage.setItem(LUONNOS + k, t) : localStorage.removeItem(LUONNOS + k); } catch (e) {} }
+
+async function gh(polku, { method = "GET", body = null, etag = null } = {}) {
+  const otsakkeet = { "Accept": "application/vnd.github+json", "Authorization": "Bearer " + tila.tunnus,
+                      "X-GitHub-Api-Version": "2022-11-28" };
+  if (etag) otsakkeet["If-None-Match"] = etag;
+  if (body) otsakkeet["Content-Type"] = "application/json";
+  const r = await fetch(API + polku, { method, headers: otsakkeet, body: body ? JSON.stringify(body) : null, cache: "no-store" });
+  if (r.status === 304) return { status: 304 };
+  let data = null;
+  try { data = await r.json(); } catch (e) {}
+  if (!r.ok) { const v = new Error((data && data.message) || ("HTTP " + r.status)); v.status = r.status; throw v; }
+  return { status: r.status, data, etag: r.headers.get("ETag") };
+}
+
+function base64(teksti) {
+  const tavut = new TextEncoder().encode(teksti);
+  let s = "";
+  for (let i = 0; i < tavut.length; i += 0x8000) s += String.fromCharCode.apply(null, tavut.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+
+async function blob(sha) {
+  if (tila.blobit.has(sha)) return tila.blobit.get(sha);
+  const { data } = await gh(`/repos/${REPO}/git/blobs/${sha}`);
+  const bin = atob((data.content || "").replace(/\n/g, ""));
+  const teksti = new TextDecoder("utf-8").decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
+  tila.blobit.set(sha, teksti);
+  return teksti;
+}
+
+function jaa(teksti) {
+  teksti = teksti.replace(/\r\n/g, "\n");
+  if (teksti.startsWith("---\n")) {
+    const loppu = teksti.indexOf("\n---", 4);
+    if (loppu !== -1) {
+      const otsake = {};
+      for (const rivi of teksti.slice(4, loppu).split("\n")) {
+        const i = rivi.indexOf(":");
+        if (i > 0) otsake[rivi.slice(0, i).trim()] = rivi.slice(i + 1).trim();
+      }
+      return [otsake, teksti.slice(loppu + 4).replace(/^\n+/, "")];
+    }
+  }
+  return [{}, teksti];
+}
+
+function esc(s) { return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function rivinsisus(s) {
+  return esc(s).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/(^|[^*\w])\*(?!\s)([^*]+?)\*(?!\*)/g, "$1<em>$2</em>");
+}
+function md(teksti) {
+  const lohkot = teksti.replace(/\r\n/g, "\n").trim().split(/\n\s*\n/);
+  return lohkot.filter((l) => l.trim()).map((l) => {
+    const rivit = l.split("\n").filter((r) => r.trim());
+    if (rivit.every((r) => /^\s*\d+\.\s+/.test(r))) return "<ol>" + rivit.map((r) => "<li>" + rivinsisus(r.replace(/^\s*\d+\.\s+/, "")) + "</li>").join("") + "</ol>";
+    if (rivit.every((r) => /^\s*[-*]\s+/.test(r))) return "<ul>" + rivit.map((r) => "<li>" + rivinsisus(r.replace(/^\s*[-*]\s+/, "")) + "</li>").join("") + "</ul>";
+    if (rivit.length === 1 && /^#{1,6}\s/.test(rivit[0])) return "<h3>" + rivinsisus(rivit[0].replace(/^#{1,6}\s+/, "")) + "</h3>";
+    return "<p>" + rivit.map(rivinsisus).join("<br>") + "</p>";
+  }).join("");
+}
+
+function el(tag, luokka, teksti) { const e = document.createElement(tag); if (luokka) e.className = luokka; if (teksti != null) e.textContent = teksti; return e; }
+function kello(d) { return String(d.getHours()).padStart(2, "0") + "." + String(d.getMinutes()).padStart(2, "0"); }
+const VIIKONPAIVAT = ["sunnuntai", "maanantai", "tiistai", "keskiviikko", "torstai", "perjantai", "lauantai"];
+function paivays(d) { return `${VIIKONPAIVAT[d.getDay()]} ${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}`; }
+function samaPaiva(a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
+function lyhytAika(d) { return samaPaiva(d, new Date()) ? kello(d) : `${d.getDate()}.${d.getMonth() + 1}. ${kello(d)}`; }
+function oletusnimi(slug) { return slug.replace(/-/g, " "); }
+function slugiksi(nimi) {
+  return nimi.toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9äöå-]/g, "").replace(/-+/g, "-").replace(/^-|-$/g, "").slice(0, 50);
+}
+
+async function lataaPuu() {
+  const r = await gh(`/repos/${REPO}/git/trees/${HAARA}?recursive=1`, { etag: tila.etag });
+  if (r.status === 304) return false;
+  tila.etag = r.etag;
+  tila.puu = new Map(r.data.tree.filter((t) => t.type === "blob").map((t) => [t.path, t.sha]));
+  return true;
+}
+
+function rakennaKetjut() {
+  const ketjut = new Map();
+  const hae = (slug) => { if (!ketjut.has(slug)) ketjut.set(slug, { slug, nimi: oletusnimi(slug), nimiSha: null, kirjeet: [], vastaukset: new Map() }); return ketjut.get(slug); };
+  for (const [polku, sha] of tila.puu) {
+    let m = polku.match(VASTAUS);
+    if (m) { hae(m[1]).vastaukset.set(polku.slice(0, -"-lumi.md".length) + ".md", { polku, sha }); continue; }
+    m = polku.match(KIRJE);
+    if (m && m[7].toLowerCase() !== "lumi") {
+      hae(m[1]).kirjeet.push({ polku, sha, lahettaja: m[7].toLowerCase(), aika: new Date(+m[2], +m[3] - 1, +m[4], +m[5], +m[6]) });
+      continue;
+    }
+    m = polku.match(NIMITIEDOSTO);
+    if (m) hae(m[1]).nimiSha = sha;
+  }
+  for (const k of ketjut.values()) {
+    k.kirjeet.sort((a, b) => (a.polku < b.polku ? -1 : 1));
+    for (const kirje of k.kirjeet) kirje.vastaus = k.vastaukset.get(kirje.polku) || null;
+    const viim = k.kirjeet[k.kirjeet.length - 1];
+    k.viimeisin = viim ? viim.aika : new Date(0);
+  }
+  if (tila.uusi && !ketjut.has(tila.uusi.slug)) ketjut.set(tila.uusi.slug, { slug: tila.uusi.slug, nimi: tila.uusi.nimi, nimiSha: null, kirjeet: [], vastaukset: new Map(), viimeisin: new Date(), uusi: true });
+  return ketjut;
+}
+
+async function lataaNimet() {
+  await Promise.all([...tila.ketjut.values()].filter((k) => k.nimiSha).map(async (k) => {
+    const rivi = (await blob(k.nimiSha)).split("\n").find((r) => r.trim());
+    if (rivi) k.nimi = rivi.replace(/^#+\s*/, "").trim() || k.nimi;
+  }));
+}
+
+async function lataaMuisti() {
+  const msha = tila.puu.get("muisti/muistiinpanot.md");
+  const asha = tila.puu.get("muisti/alku.md");
+  const [muisti, alku] = await Promise.all([msha ? blob(msha) : "", asha ? blob(asha) : ""]);
+  tila.muistiot = [];
+  const osat = jaa(muisti)[1].split(/^### /m).slice(1);
+  for (const osa of osat) {
+    const i = osa.indexOf("\n");
+    const otsikko = (i === -1 ? osa : osa.slice(0, i)).trim();
+    const runko = i === -1 ? "" : osa.slice(i + 1).trim();
+    const m = otsikko.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4}) klo (\d{1,2})\.(\d{2})(?:\s*·\s*(.+))?$/);
+    const aika = m ? new Date(+m[3], +m[2] - 1, +m[1], +m[4], +m[5]) : null;
+    tila.muistiot.push({ otsikko, runko, aika, ketju: m && m[6] ? m[6].trim() : null });
+  }
+  tila.alku = jaa(alku)[1].replace(/^#\s.*\n+/, "");
+}
+
+function muistioVastaukselle(slug, aika) {
+  if (!aika) return null;
+  return tila.muistiot.find((n) => n.ketju === slug && n.aika && n.aika >= new Date(aika.getTime() - 120000) && n.aika <= new Date(aika.getTime() + 300000)) || null;
+}
+
+async function paivita({ pakota = false } = {}) {
+  clearTimeout(tila.ajastin);
+  if (!tila.tunnus) { naytaTervetuloa(); return; }
+  try {
+    if (pakota) tila.etag = null;
+    const muuttui = await lataaPuu();
+    if (muuttui || !tila.ketjut.size) {
+      tila.ketjut = rakennaKetjut();
+      await Promise.all([lataaNimet(), lataaMuisti()]);
+      if (!tila.valittu || !tila.ketjut.has(tila.valittu)) tila.valittu = valitseOletus();
+      await piirraKetju();
+      piirraValikko();
+      piirraMuisti();
+    } else {
+      piirraTila();
+    }
+  } catch (v) {
+    naytaVirhe(v);
+  }
+  ajoita();
+}
+
+function valitseOletus() {
+  const toive = decodeURIComponent((location.hash || "").slice(1));
+  if (toive && tila.ketjut.has(toive)) return toive;
+  const kaikki = [...tila.ketjut.values()].sort((a, b) => b.viimeisin - a.viimeisin);
+  return kaikki.length ? kaikki[0].slug : null;
+}
+
+function odottava(k) {
+  if (!k || !k.kirjeet.length) return null;
+  const viim = k.kirjeet[k.kirjeet.length - 1];
+  return viim.vastaus ? null : viim;
+}
+
+function ajoita() {
+  if (!tila.tunnus || document.hidden) return;
+  const k = tila.ketjut.get(tila.valittu);
+  const odottaa = odottava(k);
+  let vali = 120000;
+  if (odottaa) {
+    const ika = (Date.now() - Math.max(odottaa.aika.getTime(), tila.juuriLahetetty || 0)) / 60000;
+    vali = ika < ODOTUS_HIDAS ? 10000 : 60000;
+  }
+  tila.ajastin = setTimeout(() => paivita(), vali);
+}
+
+function piirraTila() {
+  const t = $("tila");
+  t.textContent = "";
+  const k = tila.ketjut.get(tila.valittu);
+  const piste = el("span", "piste");
+  piste.setAttribute("aria-hidden", "true");
+  const odottaa = odottava(k);
+  let teksti;
+  if (!k || !k.kirjeet.length) {
+    teksti = "Ensimmäinen kirje aloittaa ketjun.";
+  } else if (odottaa) {
+    const ika = (Date.now() - Math.max(odottaa.aika.getTime(), tila.juuriLahetetty || 0)) / 60000;
+    if (ika < ODOTUS_HIDAS) { piste.classList.add("meripihka"); teksti = "Kirje on laatikossa. Odotetaan Lumin vastausta."; }
+    else teksti = "Kirje odottaa laatikossa. Lumi vastaa, kun pelikone ja postinkantaja ovat käynnissä.";
+  } else {
+    const viim = k.kirjeet[k.kirjeet.length - 1];
+    piste.classList.add("vihrea");
+    teksti = "Lumi vastasi " + (viim.vastausAika ? (samaPaiva(viim.vastausAika, new Date()) ? "klo " : "") + lyhytAika(viim.vastausAika) : "");
+  }
+  t.append(piste, document.createTextNode(teksti));
+}
+
+async function piirraKetju() {
+  const k = tila.ketjut.get(tila.valittu);
+  const sailio = $("kirjeet");
+  $("tervetuloa").hidden = true;
+  $("kirjoitus").hidden = !k;
+  if (!k) { sailio.textContent = ""; $("ketjunnimi").textContent = "Lumin pesä"; $("ketjuntiedot").textContent = "Ei vielä ketjuja"; piirraTila(); return; }
+  $("ketjunnimi").textContent = k.nimi;
+  const lumin = k.kirjeet.filter((x) => x.vastaus).length;
+  $("ketjuntiedot").textContent = `Lumin pesä · ${k.kirjeet.length + lumin} ${k.kirjeet.length + lumin === 1 ? "kirje" : "kirjettä"}`;
+  document.title = k.nimi + " · Lumin postilaatikko";
+  await Promise.all(k.kirjeet.flatMap((x) => [blob(x.sha), x.vastaus ? blob(x.vastaus.sha) : null]));
+  const osat = [];
+  for (const x of k.kirjeet) {
+    osat.push({ tyyppi: "kirje", kirje: x, aika: x.aika });
+    if (x.vastaus) {
+      const [otsake, teksti] = jaa(tila.blobit.get(x.vastaus.sha));
+      const aika = otsake.aika ? new Date(otsake.aika) : x.aika;
+      x.vastausAika = isNaN(aika) ? x.aika : aika;
+      osat.push({ tyyppi: "vastaus", kirje: x, teksti, aika: x.vastausAika });
+    }
+  }
+  const piilossa = tila.naytaKaikki ? 0 : Math.max(0, osat.length - NAKYVAT);
+  sailio.textContent = "";
+  if (piilossa) {
+    const nappi = el("button", "aiemmat", `Näytä ${piilossa} aiempaa ${piilossa === 1 ? "kirjettä" : "kirjettä"}`);
+    nappi.type = "button";
+    nappi.addEventListener("click", () => { tila.naytaKaikki = true; piirraKetju(); });
+    sailio.append(nappi);
+  }
+  let edellinenPaiva = null;
+  osat.slice(piilossa).forEach((osa) => {
+    if (!edellinenPaiva || !samaPaiva(edellinenPaiva, osa.aika)) { sailio.append(el("div", "paiva", paivays(osa.aika))); edellinenPaiva = osa.aika; }
+    if (osa.tyyppi === "kirje") {
+      const a = el("article", "kirje");
+      const ots = el("div", "otsake");
+      ots.append(el("span", "lahettaja", NIMET[osa.kirje.lahettaja] || osa.kirje.lahettaja), el("span", "aika", kello(osa.kirje.aika)));
+      const leipa = el("div", "leipa");
+      leipa.innerHTML = md(jaa(tila.blobit.get(osa.kirje.sha))[1]);
+      a.append(ots, leipa);
+      sailio.append(a);
+    } else {
+      const a = el("article", "kirje lumi" + (tila.juuriLahetetty && osa.aika.getTime() > tila.juuriLahetetty - 60000 ? " uusi" : ""));
+      const ots = el("div", "otsake");
+      ots.append(el("span", "lahettaja", "Lumi"), el("span", "aika", kello(osa.aika)));
+      const leipa = el("div", "leipa");
+      leipa.innerHTML = md(osa.teksti);
+      a.append(ots, leipa);
+      sailio.append(a);
+      const n = muistioVastaukselle(k.slug, osa.aika);
+      if (n) {
+        const h = el("aside", "huomautus");
+        h.setAttribute("aria-label", "Lumin muistiinpano tästä kirjeestä");
+        h.append(el("span", "kicker", "Lumi kirjoitti muistiin · " + (n.aika ? kello(n.aika) : "")));
+        const nl = el("div", "leipa");
+        nl.innerHTML = md(n.runko);
+        const linkki = el("button", "linkkinappi", "Kaikki Lumin muistiinpanot");
+        linkki.type = "button";
+        linkki.addEventListener("click", avaaMuisti);
+        h.append(nl, linkki);
+        sailio.append(h);
+      }
+    }
+  });
+  const odottaa = odottava(k);
+  if (odottaa) {
+    const ika = (Date.now() - Math.max(odottaa.aika.getTime(), tila.juuriLahetetty || 0)) / 60000;
+    const l = el("div", "lukee");
+    if (ika < ODOTUS_HIDAS) {
+      const p = el("span", "pisteet"); p.setAttribute("aria-hidden", "true"); p.append(el("span"), el("span"), el("span"));
+      l.append(p, document.createTextNode("Odotetaan Lumin vastausta…"));
+    } else {
+      l.textContent = "Kirje odottaa Lumia laatikossa.";
+    }
+    sailio.append(l);
+  }
+  if (!k.kirjeet.length) sailio.append(el("div", "tyhja", "Tämä ketju on vielä tyhjä. Ensimmäinen kirje aloittaa sen."));
+  const kentta = $("kirjeteksti");
+  if (kentta.dataset.ketju !== k.slug) { kentta.value = lueLuonnos(k.slug); kentta.dataset.ketju = k.slug; }
+  piirraTila();
+}
+
+function piirraValikko() {
+  const v = $("ketjuvalikko");
+  v.textContent = "";
+  const kaikki = [...tila.ketjut.values()].sort((a, b) => b.viimeisin - a.viimeisin);
+  if (!kaikki.length) { v.append(el("div", "tyhja", "Ei vielä ketjuja.")); return; }
+  for (const k of kaikki) {
+    const b = el("button");
+    b.type = "button";
+    b.setAttribute("role", "menuitem");
+    b.setAttribute("aria-current", String(k.slug === tila.valittu));
+    const lumin = k.kirjeet.filter((x) => x.vastaus).length;
+    const oikea = k.kirjeet.length ? `${k.kirjeet.length + lumin} kirj. · ${lyhytAika(k.viimeisin)}` : "uusi";
+    b.append(el("span", "vnimi", k.nimi), el("span", "vtiedot", oikea));
+    b.addEventListener("click", () => { valitse(k.slug); suljeValikko(); });
+    v.append(b);
+  }
+}
+
+function piirraMuisti() {
+  const m = $("muistiot");
+  m.textContent = "";
+  if (!tila.muistiot.length) m.append(el("p", "selite", "Lumi ei ole vielä kirjoittanut muistiinpanoja."));
+  for (const n of [...tila.muistiot].reverse()) {
+    const d = el("div", "muistio");
+    d.append(el("span", "aika", n.otsikko));
+    const l = el("div", "leipa");
+    l.innerHTML = md(n.runko);
+    d.append(l);
+    m.append(d);
+  }
+  $("alku").innerHTML = md(tila.alku || "");
+}
+
+function valitse(slug) {
+  tila.valittu = slug;
+  tila.naytaKaikki = false;
+  history.replaceState(null, "", "#" + encodeURIComponent(slug));
+  piirraKetju();
+  piirraValikko();
+  ajoita();
+}
+
+function avaaValikko() { $("ketjuvalikko").hidden = false; $("ketjunappi").setAttribute("aria-expanded", "true"); const eka = $("ketjuvalikko").querySelector("button"); if (eka) eka.focus(); }
+function suljeValikko() { $("ketjuvalikko").hidden = true; $("ketjunappi").setAttribute("aria-expanded", "false"); }
+function avaaMuisti() { $("muisti").hidden = false; $("suljemuisti").focus(); }
+function suljeMuisti() { $("muisti").hidden = true; $("muistinappi").focus(); }
+
+function naytaTervetuloa() {
+  $("tervetuloa").hidden = false;
+  $("kirjoitus").hidden = true;
+  $("kirjeet").textContent = "";
+  $("tila").textContent = "";
+  $("ketjunnimi").textContent = "Lumin pesä";
+  $("ketjuntiedot").textContent = "postilaatikko";
+}
+
+function naytaVirhe(v) {
+  const t = $("tila");
+  t.textContent = "";
+  const piste = el("span", "piste"); piste.setAttribute("aria-hidden", "true");
+  let teksti = "Yhteys GitHubiin ei onnistunut. Yritän pian uudelleen.";
+  if (v.status === 401) teksti = "GitHub ei hyväksynyt tunnusta. Tarkista se asetuksista.";
+  else if (v.status === 403) teksti = "Tunnuksella ei ole oikeutta pesään, tai pyyntöjä on ollut liikaa.";
+  else if (v.status === 404) teksti = "Pesää ei löydy. Onko tunnuksella pääsy lumi-repoon?";
+  t.append(piste, document.createTextNode(teksti));
+}
+
+function aikaleima(d) {
+  const p = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`;
+}
+
+async function laheta(e) {
+  e.preventDefault();
+  const k = tila.ketjut.get(tila.valittu);
+  const teksti = $("kirjeteksti").value.trim();
+  const virhe = $("kirjoitusvirhe");
+  virhe.hidden = true;
+  if (!k || !teksti) return;
+  const nappi = $("lahetanappi");
+  nappi.disabled = true;
+  nappi.querySelector(".napinteksti").textContent = "Lähetetään…";
+  try {
+    if (k.uusi && !tila.puu.has(`posti/${k.slug}/ketju.md`)) {
+      await gh(`/repos/${REPO}/contents/${encodeURIComponent(`posti/${k.slug}/ketju.md`).replace(/%2F/g, "/")}`,
+        { method: "PUT", body: { message: `Uusi ketju: ${k.nimi}`, branch: HAARA, content: base64(`# ${k.nimi}\n`) } });
+    }
+    const nyt = new Date();
+    const polku = `posti/${k.slug}/${aikaleima(nyt)}-${LAHETTAJA}.md`;
+    await gh(`/repos/${REPO}/contents/${encodeURIComponent(polku).replace(/%2F/g, "/")}`,
+      { method: "PUT", body: { message: `Johannes kirjoittaa Lumille: ${k.nimi}`, branch: HAARA, content: base64(teksti + "\n") } });
+    $("kirjeteksti").value = "";
+    tallennaLuonnos(k.slug, "");
+    tila.juuriLahetetty = Date.now();
+    tila.uusi = null;
+    await paivita({ pakota: true });
+    $("kirjeet").lastElementChild && $("kirjeet").lastElementChild.scrollIntoView({ behavior: "smooth", block: "end" });
+  } catch (v) {
+    virhe.textContent = v.status === 422 ? "Samalla minuutilla on jo kirje. Odota hetki ja lähetä uudelleen."
+      : v.status === 401 ? "GitHub ei hyväksynyt tunnusta. Tarkista se asetuksista." : "Kirjeen lähetys ei onnistunut. Luonnos on tallessa, joten voit yrittää uudelleen.";
+    virhe.hidden = false;
+  } finally {
+    nappi.disabled = false;
+    nappi.querySelector(".napinteksti").textContent = "Lähetä kirje";
+  }
+}
+
+function avaaAsetukset() {
+  $("tunnuskentta").value = "";
+  $("tunnustila").textContent = tila.tunnus ? "Tähän selaimeen on tallennettu tunnus. Uusi tunnus korvaa sen." : "Tähän selaimeen ei ole vielä tallennettu tunnusta.";
+  $("asetukset").showModal();
+}
+
+function aloitaUusiKetju(e) {
+  e.preventDefault();
+  const nimi = $("ketjukentta").value.trim();
+  const slug = slugiksi(nimi);
+  const virhe = $("ketjuvirhe");
+  if (!slug) { virhe.textContent = "Anna ketjulle nimi."; virhe.hidden = false; return; }
+  if (tila.ketjut.has(slug)) { virhe.textContent = "Samanniminen ketju on jo olemassa."; virhe.hidden = false; return; }
+  tila.uusi = { slug, nimi };
+  tila.ketjut.set(slug, { slug, nimi, nimiSha: null, kirjeet: [], vastaukset: new Map(), viimeisin: new Date(), uusi: true });
+  $("uusiketjudialogi").close();
+  valitse(slug);
+  $("kirjeteksti").focus();
+}
+
+$("ketjunappi").addEventListener("click", () => ($("ketjuvalikko").hidden ? avaaValikko() : suljeValikko()));
+document.addEventListener("click", (e) => { if (!$("ketjuvalikko").hidden && !e.target.closest("#ketjuvalikko, #ketjunappi")) suljeValikko(); });
+$("ketjuvalikko").addEventListener("keydown", (e) => { if (e.key === "Escape") { suljeValikko(); $("ketjunappi").focus(); } });
+$("muistinappi").addEventListener("click", () => ($("muisti").hidden ? avaaMuisti() : suljeMuisti()));
+$("suljemuisti").addEventListener("click", suljeMuisti);
+$("muisti").addEventListener("keydown", (e) => { if (e.key === "Escape") suljeMuisti(); });
+$("uusinappi").addEventListener("click", () => { if (!tila.tunnus) return avaaAsetukset(); $("ketjukentta").value = ""; $("ketjuvirhe").hidden = true; $("uusiketjudialogi").showModal(); });
+$("peruketju").addEventListener("click", () => $("uusiketjudialogi").close());
+$("uusiketjulomake").addEventListener("submit", aloitaUusiKetju);
+$("asetusnappi").addEventListener("click", avaaAsetukset);
+$("avaaasetukset").addEventListener("click", avaaAsetukset);
+$("peruasetukset").addEventListener("click", () => $("asetukset").close());
+$("asetuslomake").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const t = $("tunnuskentta").value.trim();
+  if (t) { tila.tunnus = t; tallennaTunnus(t); tila.etag = null; tila.ketjut = new Map(); tila.blobit.clear(); }
+  $("asetukset").close();
+  paivita({ pakota: true });
+});
+$("poistatunnus").addEventListener("click", () => { poistaTunnus(); tila.tunnus = null; tila.ketjut = new Map(); tila.blobit.clear(); $("asetukset").close(); naytaTervetuloa(); });
+$("kirjoitus").addEventListener("submit", laheta);
+$("kirjeteksti").addEventListener("input", (e) => tallennaLuonnos(tila.valittu, e.target.value));
+$("kirjeteksti").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) $("kirjoitus").requestSubmit(); });
+document.addEventListener("visibilitychange", () => { if (!document.hidden) paivita(); else clearTimeout(tila.ajastin); });
+window.addEventListener("hashchange", () => { const s = decodeURIComponent(location.hash.slice(1)); if (s && s !== tila.valittu && tila.ketjut.has(s)) valitse(s); });
+setInterval(() => { if (tila.tunnus && odottava(tila.ketjut.get(tila.valittu))) piirraTila(); }, 30000);
+
+tila.tunnus = lueTunnus();
+paivita();
+})();
+</script>
+</body>
+</html>
